@@ -160,7 +160,7 @@ async function handleSendMessage(request, env) {
     )
     .run();
 
-  const pushText = buildPushText(message);
+    const pushText = buildPushText(message, env);
 
   const results = await Promise.allSettled([
     sendWxPusher(env, pushText, message),
