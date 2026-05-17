@@ -30,6 +30,9 @@ export async function onRequest(context) {
     if (method === "POST" && path === "reply") {
       return await handleParentReply(request, env);
     }
+    if (method === "POST" && path === "clear") {
+    return await handleClearMessages(env);
+    }
 
     return jsonResponse(
       {
@@ -431,9 +434,20 @@ async function buildDingTalkSignedUrl(webhook, secret) {
   return url.toString();
 }
 
-function buildPushText(message) {
-  return `【学校快捷联系】\n${message}\n\n时间：${getNowTime()}`;
+
+function buildPushText(message, env) {
+  const base = env.APP_BASE_URL || "";
+  const replyUrl = `${base}/reply.html`;
+
+  return `【学校快捷联系】
+${message}
+
+时间：${getNowTime()}
+
+👉 点击回复：
+${replyUrl}`;
 }
+
 
 function normalizeSettledResult(result) {
   if (result.status === "fulfilled") {
@@ -483,6 +497,19 @@ async function safeReadJson(res) {
       return null;
     }
   }
+}
+
+async function handleClearMessages(env) {
+  assertDb(env);
+
+  await env.DB.prepare(`
+    DELETE FROM messages
+  `).run();
+
+  return jsonResponse({
+    ok: true,
+    message: "已清空所有消息"
+  });
 }
 
 function jsonResponse(data, status = 200) {

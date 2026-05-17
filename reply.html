@@ -1,0 +1,91 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>回复消息</title>
+  <style>
+    body {
+      font-family: "Microsoft YaHei", sans-serif;
+      background: #f5f7fa;
+      padding: 16px;
+    }
+
+    .box {
+      max-width: 500px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 16px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 12px;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 16px;
+    }
+
+    .msg {
+      margin-top: 10px;
+      color: #666;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="box">
+  <h2>回复孩子</h2>
+  <textarea id="input" placeholder="输入回复内容..."></textarea>
+  <button onclick="send()">发送回复</button>
+  <div id="msg" class="msg"></div>
+</div>
+
+<script>
+async function send() {
+  const text = document.getElementById("input").value.trim();
+  const msg = document.getElementById("msg");
+
+  if (!text) {
+    msg.textContent = "请输入内容";
+    return;
+  }
+
+  msg.textContent = "发送中...";
+
+  try {
+    const res = await fetch("/api/reply", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({message: text})
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) throw new Error(data.message);
+
+    msg.textContent = "✅ 已发送";
+    document.getElementById("input").value = "";
+
+  } catch (e) {
+    msg.textContent = "❌ 失败：" + e.message;
+  }
+}
+</script>
+
+</body>
+</html>

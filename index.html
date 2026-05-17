@@ -255,6 +255,18 @@
       <textarea id="messageInput" placeholder="在这里输入要发给父母的消息……"></textarea>
       <button id="sendBtn" class="send-btn">发送给父母</button>
     </section>
+    <button id="clearBtn" style="
+      width:100%;
+      margin-top:10px;
+      background:#ef4444;
+      color:white;
+      border:none;
+      border-radius:18px;
+      padding:14px;
+      font-size:16px;
+    ">
+      🗑 清空所有消息
+    </button>
 
     <section class="messages">
       <div class="section-title">最近消息</div>
@@ -436,6 +448,31 @@
     loadMessages();
 
     setInterval(loadMessages, 5000);
+    const clearBtn = document.getElementById("clearBtn");
+
+    clearBtn.addEventListener("click", async () => {
+      if (!confirm("确定要清空所有消息吗？")) return;
+
+      try {
+        const res = await fetch("/api/clear", {
+          method: "POST"
+        });
+
+        const data = await res.json();
+
+        if (!data.ok) {
+          throw new Error(data.message);
+        }
+
+        localMessages = [];
+        renderMessages(localMessages);
+
+        showStatus("✅ 已清空全部消息", "ok");
+
+      } catch (err) {
+        showStatus("❌ 清除失败：" + err.message, "error");
+      }
+    });
   </script>
 </body>
 </html>
