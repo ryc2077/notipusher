@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>快捷联系父母</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #e8f3ff, #f8fbff);
+      color: #1f2937;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 18px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 520px;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 18px 50px rgba(37, 99, 235, 0.12);
+      padding: 22px;
+      margin-top: 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
+    .title {
+      font-size: 26px;
+      font-weight: 800;
+      margin: 0;
+      color: #2563eb;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #6b7280;
+      margin-top: 8px;
+    }
+
+    .status {
+      margin: 14px 0;
+      padding: 10px 12px;
+      border-radius: 14px;
+      font-size: 14px;
+      background: #f3f4f6;
+      color: #4b5563;
+      display: none;
+    }
+
+    .status.show {
+      display: block;
+    }
+
+    .status.ok {
+      background: #ecfdf5;
+      color: #047857;
+    }
+
+    .status.error {
+      background: #fef2f2;
+      color: #b91c1c;
+    }
+
+    .quick-box {
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #374151;
+    }
+
+    .quick-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .quick-btn {
+      border: none;
+      border-radius: 14px;
+      background: #eff6ff;
+      color: #2563eb;
+      padding: 12px 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .quick-btn:active {
+      transform: scale(0.97);
+      background: #dbeafe;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      resize: vertical;
+      border: 1px solid #d1d5db;
+      border-radius: 18px;
+      padding: 14px;
+      font-size: 16px;
+      line-height: 1.6;
+      outline: none;
+      transition: 0.15s;
+    }
+
+    textarea:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+
+    .send-btn {
+      width: 100%;
+      margin-top: 14px;
+      border: none;
+      border-radius: 18px;
+      background: #2563eb;
+      color: #ffffff;
+      padding: 15px;
+      font-size: 17px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .send-btn:active {
+      transform: scale(0.98);
+      background: #1d4ed8;
+    }
+
+    .send-btn:disabled {
+      background: #93c5fd;
+      cursor: not-allowed;
+    }
+
+    .messages {
+      margin-top: 24px;
+      border-top: 1px solid #e5e7eb;
+      padding-top: 18px;
+    }
+
+    .message-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 360px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .msg {
+      padding: 12px 14px;
+      border-radius: 16px;
+      font-size: 15px;
+      line-height: 1.6;
+      word-break: break-word;
+    }
+
+    .msg.me {
+      align-self: flex-end;
+      background: #2563eb;
+      color: white;
+      border-bottom-right-radius: 4px;
+      max-width: 88%;
+    }
+
+    .msg.parent {
+      align-self: flex-start;
+      background: #f3f4f6;
+      color: #111827;
+      border-bottom-left-radius: 4px;
+      max-width: 88%;
+    }
+
+    .msg.system {
+      align-self: center;
+      background: #fff7ed;
+      color: #9a3412;
+      font-size: 14px;
+      max-width: 100%;
+    }
+
+    .msg-meta {
+      font-size: 12px;
+      opacity: 0.75;
+      margin-bottom: 4px;
+    }
+
+    .empty {
+      text-align: center;
+      color: #9ca3af;
+      padding: 24px 0;
+      font-size: 14px;
+    }
+
+    .footer {
+      margin-top: 18px;
+      text-align: center;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    @media (max-width: 420px) {
+      .app {
+        padding: 18px;
+        border-radius: 20px;
+      }
+
+      .title {
+        font-size: 24px;
+      }
+
+      .quick-buttons {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <h1 class="title">快捷联系父母</h1>
+      <div class="subtitle">写一条消息，快速同步到手机</div>
+    </header>
+
+    <div id="status" class="status"></div>
+
+    <section class="quick-box">
+      <div class="section-title">快捷消息</div>
+      <div class="quick-buttons">
+        <button class="quick-btn" data-text="我放学了，现在可以来接我。">我放学了</button>
+        <button class="quick-btn" data-text="我已经到校门口了。">我到校门口了</button>
+        <button class="quick-btn" data-text="我今天会晚一点出来。">今天晚一点</button>
+        <button class="quick-btn" data-text="我需要你现在联系我一下。">请联系我</button>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-title">发送内容</div>
+      <textarea id="messageInput" placeholder="在这里输入要发给父母的消息……"></textarea>
+      <button id="sendBtn" class="send-btn">发送给父母</button>
+    </section>
+
+    <section class="messages">
+      <div class="section-title">最近消息</div>
+      <div id="messageList" class="message-list">
+        <div class="empty">暂无消息</div>
+      </div>
+    </section>
+
+    <div class="footer">
+      页面会自动刷新父母回复
+    </div>
+  </main>
+
+  <script>
+    const messageInput = document.getElementById("messageInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const statusBox = document.getElementById("status");
+    const messageList = document.getElementById("messageList");
+    const quickButtons = document.querySelectorAll(".quick-btn");
+
+    let localMessages = [];
+
+    function showStatus(text, type = "") {
+      statusBox.textContent = text;
+      statusBox.className = "status show";
+
+      if (type) {
+        statusBox.classList.add(type);
+      }
+
+      if (type === "ok") {
+        setTimeout(() => {
+          statusBox.className = "status";
+          statusBox.textContent = "";
+        }, 2200);
+      }
+    }
+
+    function getCurrentTime() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, "0");
+      const m = String(now.getMinutes()).padStart(2, "0");
+      return `${h}:${m}`;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function renderMessages(messages) {
+      messageList.innerHTML = "";
+
+      if (!messages || messages.length === 0) {
+        messageList.innerHTML = '<div class="empty">暂无消息</div>';
+        return;
+      }
+
+      messages.forEach(item => {
+        const div = document.createElement("div");
+        const from = item.from || "system";
+
+        div.className = `msg ${from}`;
+
+        const name =
+          from === "me" ? "我" :
+          from === "parent" ? "父母" :
+          "系统";
+
+        div.innerHTML = `
+          <div class="msg-meta">${escapeHtml(name)} · ${escapeHtml(item.time || "")}</div>
+          <div>${escapeHtml(item.text || "")}</div>
+        `;
+
+        messageList.appendChild(div);
+      });
+
+      messageList.scrollTop = messageList.scrollHeight;
+    }
+
+    function addLocalMessage(from, text) {
+      localMessages.push({
+        from,
+        text,
+        time: getCurrentTime()
+      });
+
+      if (localMessages.length > 30) {
+        localMessages = localMessages.slice(-30);
+      }
+
+      renderMessages(localMessages);
+    }
+
+    async function sendMessage() {
+      const text = messageInput.value.trim();
+
+      if (!text) {
+        showStatus("请先输入要发送的内容", "error");
+        return;
+      }
+
+      sendBtn.disabled = true;
+      sendBtn.textContent = "正在发送……";
+      showStatus("正在发送给父母……");
+
+      try {
+        const res = await fetch("/api/send", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: text
+          })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok || !data.ok) {
+          throw new Error(data.message || "发送失败");
+        }
+
+        addLocalMessage("me", text);
+        messageInput.value = "";
+        showStatus("已发送给父母", "ok");
+
+        loadMessages();
+
+      } catch (err) {
+        showStatus("发送失败：" + err.message, "error");
+
+        // 后端还没写的时候，会走到这里。
+        // 为了方便你先看页面效果，本地先显示一条提示。
+        addLocalMessage("system", "接口还没写好，所以现在只是页面测试。");
+
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.textContent = "发送给父母";
+      }
+    }
+
+    async function loadMessages() {
+      try {
+        const res = await fetch("/api/messages");
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok || !data.ok || !Array.isArray(data.messages)) {
+          return;
+        }
+
+        localMessages = data.messages;
+        renderMessages(localMessages);
+
+      } catch (err) {
+        // 后端还没写时会请求失败，这里静默处理。
+      }
+    }
+
+    quickButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        messageInput.value = btn.dataset.text || "";
+        messageInput.focus();
+      });
+    });
+
+    sendBtn.addEventListener("click", sendMessage);
+
+    messageInput.addEventListener("keydown", event => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        sendMessage();
+      }
+    });
+
+    loadMessages();
+
+    setInterval(loadMessages, 5000);
+  </script>
+</body>
+</html>
